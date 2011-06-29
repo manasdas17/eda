@@ -1,0 +1,15 @@
+g <- read.table("amounts_dates.tsv", sep = "\t", col.names = c("Year", "NSF Organisation", "Grant Amount", "Start Date", "End Date"))
+g$End.Date <- as.Date(as.character(g$End.Date), format='%B %d, %Y')
+g$Start.Date <- as.Date(as.character(g$Start.Date), format='%B %d, %Y')
+g$Duration <- with(g, difftime(End.Date, Start.Date, units='weeks'))
+g$Duration <- as.numeric(g$Duration)
+g$Duration <- cut(g$Duration, breaks=3, labels=c("Short", "Medium", "Long"), ordered=TRUE)
+gf <- g
+gf2 <- gf[gf$Duration=="Short",]
+gf2$Duration <- as.numeric(gf2$Duration)
+gf2$Duration <- with(gf2, difftime(End.Date, Start.Date, units='weeks'))
+gf2$Duration <- as.numeric(gf2$Duration)
+library(ggplot2)
+m <- ddply(gf2[c(2,6)], .(NSF.Organisation), numcolwise(mean))
+m$df <- cut(m$Duration, breaks=5, labels=c("Very Short", "Short", "Medium", "Long", "Very Long"), ordered=TRUE)
+qplot(df, NSF.Organisation, data=m, geom="bar")
